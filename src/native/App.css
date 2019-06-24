@@ -1,0 +1,33 @@
+body {
+  background: #dddddd;
+}
+
+.noselect {
+  -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+     -khtml-user-select: none; /* Konqueror HTML */
+       -moz-user-select: none; /* Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome and Opera */
+}
+canvas {
+  position: absolute;
+  top:0;
+  left:0;
+  background: white;
+  margin:40px;
+  box-shadow: 0px 0px 7px #8b8b8b;
+
+}
+.overlay {
+  /*position: absolute;*/
+  z-index: 100;
+  top:10px;
+  margin-left: 40px;
+  margin-right: 1rem;
+
+}
+.ib {
+  display: inline-block;
+}
