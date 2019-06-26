@@ -224,4 +224,26 @@ button {
 .box > input {
     margin-right: 6px;
 }
+.section-table {
+    background: white;
+    width: calc(100% - 301px);
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    z-index: 10;
+    border-top: 1px solid #e3e3e3;
+    transition: 0.3s;
+}
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
 
+table, td, th {
+    border: 1px solid black;
+}
+.color-detector {
+    height: 14px;
+    width: 14px;
+    border: 1px solid grey;
+}

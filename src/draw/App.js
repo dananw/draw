@@ -4,7 +4,7 @@ import classNames from 'classnames'
 import { pdfjs } from 'react-pdf';
 import { Document, Page } from 'react-pdf';
 import Editor from './Editor.js'
-import {saveCalibrate, getCalibrate, calcDistance} from './utils'
+import {saveCalibrate, getCalibrate} from './utils'
 
 import './App.css';
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
@@ -26,6 +26,7 @@ export default class App extends Component {
     // modal
     modalInput: 0,
     toggleModal: false,
+    toggleTable: false,
 
     // zoom
     scale: 1,
@@ -109,6 +110,12 @@ export default class App extends Component {
   componentWillUnmount() {
     document.removeEventListener('keydown', this.handleKeyDown);
     document.removeEventListener('keyup', this.handleKeyUp);
+  }
+
+  onToggleTable = () => {
+    this.setState({
+      toggleTable: !this.state.toggleTable
+    })
   }
 
   showModal = (distance) => {
@@ -205,8 +212,13 @@ export default class App extends Component {
 
           <section className="box-main">
             {this.renderModalMeasure()}
-            <div className="d-editor" style={{height: innerHeight}}>
+            <div className="d-editor" style={{height: this.state.toggleTable ? innerHeight - 180 : innerHeight}}>
               <div className="toolbar">
+                <button className="toolbar-item toolbar-border" onClick={this.onToggleTable}>
+                  <span className="ibox">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" focusable="false"><path d="M17 4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-3l-2-2.5L6 10V6a2 2 0 0 1 2-2h9m0-2H8a4 4 0 0 0-4 4v3.3l-1.56 1.95-1 1.25 1 1.25L4 15.7V18a4 4 0 0 0 4 4h9a4 4 0 0 0 4-4V6a4 4 0 0 0-4-4z"></path><path d="M8 10h9v1H8zm0 2h9v1H8zm0 2h9v1H8z" opacity=".5"></path><path d="M7.8 7a3.69 3.69 0 0 1 2.33-1.64 2.78 2.78 0 0 1 1.61.15 4 4 0 0 1 1.29.9 2.48 2.48 0 0 0 1.66.9 4.1 4.1 0 0 0 2.1-.58.3.3 0 0 1 .4.13.31.31 0 0 1 0 .31 3.55 3.55 0 0 1-2.47 1.47 3.4 3.4 0 0 1-2.81-1.18 2.18 2.18 0 0 0-1.65-.81 4.5 4.5 0 0 0-2.08.73.27.27 0 0 1-.37-.1A.26.26 0 0 1 7.8 7z"></path><circle cx="9" cy="17.5" r="1" opacity=".5"></circle><circle cx="12.5" cy="17.5" r="1" opacity=".25"></circle><circle cx="16" cy="17.5" r="1" opacity=".66"></circle></svg>
+                  </span>
+                </button>
                 <button onClick={(e) => this.zoom('out')} className={classNames('toolbar-item toolbar-border', {'inactive-item': this.state.scale <= 1})} disabled={this.state.scale <= 1}>
                   <span className="ibox">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" focusable="false">
@@ -244,6 +256,36 @@ export default class App extends Component {
                   </section>
                 </div>
               </div>
+            </div>
+          </section>
+
+          {/*Table*/}
+          <section className="section-table" style={{'height': this.state.toggleTable ? '180px' : '0'}}>
+            <div style={{'padding': '0.5rem'}}>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Object</th>
+                    <th>Area</th>
+                    <th>Perimeter</th>
+                    <th>Color</th>
+                    <th>Layer</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>1</td>
+                    <td align="center">690 m</td>
+                    <td align="center">Perimeter</td>
+                    <td align="center">
+                      <div className="color-detector" style={{'backgroundColor': 'aqua'}}></div>
+                    </td>
+                    <td align="center">
+                      <button>show</button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </section>
 

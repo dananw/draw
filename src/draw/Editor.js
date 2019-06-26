@@ -5,13 +5,13 @@ import { Stage, Layer, Text, Line } from 'react-konva';
 import {
   getCenteredFromTwoPoint, 
   calcDistance,
-  calcMeasure,
-  calcPoligonArea,
-  calcAngleDegrees,
+  // calcMeasure,
+  calcArea,
+  calcPerimeter,
   infoCoordinate,
 } from './utils'
 
-export default class Editor extends React.Component {
+export default class Editor extends Component {
   state = {
     measure: 'distance',
     calibrate: false,
@@ -24,15 +24,10 @@ export default class Editor extends React.Component {
     centered_coordinate: [],
     drawed_centered_coordinate: [],
 
-    x: 0,
-    y: 0,
-    distance_x: 0, 
-    distance_y: 0,
     toggleModal: false,
   };
-
-  // stageNode = React.createRef();
-  tmp_coordinate = [];
+  stageNode = React.createRef();
+  layer = React.createRef();
   obj_coordinate = [];
   step = 0;
 
@@ -60,37 +55,30 @@ export default class Editor extends React.Component {
     console.log(infoCoordinate(e))
   }
 
+  // mousePointerX = (e) => {
+  //   console.log('Pointer X = ', e.evt.clientX)
+  // };
+  //
+  // mousePointerY = (e) => {
+  //   console.log('Pointer Y = ', e.evt.clientY)
+  // };
+  //
+  // mouseMove = (e) => {
+  //   this.mousePointerX(e);
+  //   this.mousePointerY(e);
+  // };
+
   mouseDown = (e) => {
     const {calibrate_value} = this.state;
     let x = e.evt.offsetX;
     let y = e.evt.offsetY;
 
     if(this.state.measure) {
-      let last_x, last_y, distance_x, distance_y;
-
       this.step += 1;
       this.obj_coordinate.push({x, y});
-      this.tmp_coordinate = [...this.tmp_coordinate, x,y];
-      if(2 >= this.tmp_coordinate.length) {
-        // CHECK UNTUK PERTAMA KALI
-        last_x = 0;
-        last_y = 1
-      }else{
-        last_x = this.tmp_coordinate.length - 4;
-        last_y = this.tmp_coordinate.length - 3
-      }
 
-      // kalkulasi jarak point x
-      distance_x = calcDistance(x, this.tmp_coordinate[last_x]);
-
-      // kalkulasi jarak point y
-      distance_y = calcDistance(y, this.tmp_coordinate[last_y]);
       this.setState({
         coordinate: [...this.state.coordinate, x,y],
-        distance_x: calcMeasure(distance_x, calibrate_value),
-        distance_y: calcMeasure(distance_y, calibrate_value),
-        x: x,
-        y: y,
       });
 
       if(this.step > 1 ) {
@@ -98,9 +86,6 @@ export default class Editor extends React.Component {
           // deteksi coordinate x, y yg terakhir sama, karna double click
           return
         }
-
-        // let angle = calcAngleDegrees(this.obj_coordinate[this.step - 1], this.obj_coordinate[this.step - 2]);
-        // console.log(angle)
 
         let center_point = getCenteredFromTwoPoint(this.obj_coordinate[this.step - 1], this.obj_coordinate[this.step - 2], calibrate_value)
         this.setState({
@@ -130,25 +115,39 @@ export default class Editor extends React.Component {
 
   doubleClick = (e) => {
     if(this.state.measure) {
-      const {drawed_coordinate, coordinate, drawed_centered_coordinate, centered_coordinate, calibrate_value} =  this.state;
+      const {drawed_coordinate, coordinate, drawed_centered_coordinate, centered_coordinate} =  this.state;
 
-      // let totalArea = calcPoligonArea(centered_coordinate);
+      let totalArea = calcArea(centered_coordinate);
+      let totalParimeter = calcPerimeter(centered_coordinate);
+      console.log(totalArea, totalParimeter);
 
       this.obj_coordinate = [];
       this.step = 0;
 
       // Re setting coordinate
-      this.tmp_coordinate = [];
       this.setState({
         drawed_coordinate: [...drawed_coordinate, coordinate],
         drawed_centered_coordinate: [...drawed_centered_coordinate, centered_coordinate],
         coordinate: [],
         centered_coordinate: [],
-        distance_x: 0, 
-        distance_y: 0,
-      })
+      });
     }
   };
+
+  DrawedLineOver = (e) => {
+    console.log('LINE over', e);
+    e.currentTarget.attrs.stroke = "red";
+    this.layer.current.draw()
+  };
+
+  DrawedLineOut = (e) => {
+    e.currentTarget.attrs.stroke = "black";
+    this.layer.current.draw()
+  };
+
+  drawedTextOver = (e) => {
+    console.log(e)
+  }
 
   render() {
     const {width, height} = this.props;
@@ -180,7 +179,10 @@ export default class Editor extends React.Component {
           closed={measure !== 'distance'}
           fill="#00fff29e"
           stroke="black"
-          strokeWidth={0.5}
+          strokeWidth={1}
+          onMouseOver={this.DrawedLineOver}
+          onMouseOut={this.DrawedLineOut}
+          zIndex={1}
         />
       )  
     );
@@ -197,7 +199,9 @@ export default class Editor extends React.Component {
       centered_coordinate.map((item, key) => 
         <Text
           key={key}
+          rotation={item.rotation_text}
           fontSize={10}
+          lineHeight={1}
           text={`${item.measure} m`}
           x={item.center_x}
           y={item.center_y}
@@ -206,16 +210,18 @@ export default class Editor extends React.Component {
     );
 
     const DrawedText = () => (
-      drawed_centered_coordinate.map((data, data_key) => 
+      drawed_centered_coordinate.map((data) =>
         data.map((item, key) => 
           <Text
             key={key}
-            rotate={item.angle}
-            rotation={item.angle}
+            rotation={item.rotation_text}
             fontSize={10}
+            zIndex={4}
+            lineHeight={1}
             text={`${item.measure} m`}
             x={item.center_x}
             y={item.center_y}
+            onMouseOver={this.drawedTextOver}
           />
         )
       )
@@ -224,16 +230,16 @@ export default class Editor extends React.Component {
     return (
       <Fragment>
         <Stage
-          // ref={this.stageNode}
+          ref={this.stageNode}
           className="canvas-overlay"
-          width={width} 
-          height={height} 
+          width={width}
+          height={height}
           style={{'cursor': measure ? 'crosshair' : calibrate ? 'crosshair' : 'default'}}
           onClick={this.mouseDown}
           onDblClick={this.doubleClick}
-          onMouseMove={this.mouseMove}
+          // onMouseMove={this.mouseMove}
         >
-          <Layer >
+          <Layer ref={this.layer}>
             {calibrate && <MeasureLine/>}
             {/*<TextInfo/>*/}
             {measure && <DrawingLine/>}
