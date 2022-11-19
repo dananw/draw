@@ -9,7 +9,7 @@
     "react-dom": "^16.8.6",
     "react-konva": "^16.8.7-2",
     "react-pdf": "^4.0.5",
-    "react-scripts": "3.0.1"
+    "react-scripts": "3.4.4"
   },
   "scripts": {
     "start": "react-scripts start",
